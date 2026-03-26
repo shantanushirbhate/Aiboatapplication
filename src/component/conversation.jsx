@@ -30,9 +30,52 @@ export default function ConversationHistory() {
 
       return maxB - maxA;
     });
+  
+  const groupChatsByDate = (chats) => {
+  const groups = {};
+
+  chats.forEach((chat) => {
+    const date = new Date(chat.createdAt);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    let label = date.toDateString();
+
+    if (date.toDateString() === today.toDateString()) {
+      label = "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      label = "Yesterday";
+    }
+
+    if (!groups[label]) {
+      groups[label] = [];
+    }
+
+    groups[label].push(chat);
+  });
+
+  return groups;
+  };
+  const groupedChats = groupChatsByDate(processedChats);
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box  sx={{
+    p: 3,
+    height: "100vh",        // ✅ full height
+    overflowY: "hidden",      // ✅ enable scroll
+
+    // ✅ Hide scrollbar (Chrome, Safari)
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
+
+    // ✅ Firefox
+    scrollbarWidth: "none",
+
+    // ✅ IE/Edge legacy
+    msOverflowStyle: "none",
+  }}>
       {processedChats.length === 0 && <Typography>No chats found</Typography>}
       <Typography>
         Showing chats with: {selectedRating || "All Ratings"}
@@ -57,81 +100,100 @@ export default function ConversationHistory() {
         </Select>
       </Box>
 
-      {processedChats.map((chat) => (
-        <Card
-          key={chat.id}
-          sx={{
-            mb: 2,
-            p: 2,
-            borderRadius: "12px",
-            boxShadow: 3,
-          }}
-        >
-          {chat.messages.map((msg, index) => (
+    {Object.keys(groupedChats).map((date) => (
+  <Box key={date} sx={{ mb: 3 }}>
+    
+    {/* 📅 Date Heading */}
+    <Typography
+      variant="h6"
+      sx={{ mb: 1, fontWeight: "bold", color: "#555" }}
+    >
+      {date}
+    </Typography>
+
+    {/* Chats under this date */}
+    {groupedChats[date].map((chat) => (
+      <Card
+        key={chat.id}
+        sx={{
+          mb: 2,
+          p: 2,
+          borderRadius: "12px",
+          boxShadow: 3,
+        }}
+      >
+        {chat.messages.map((msg, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 1,
+              mb: 2,
+            }}
+          >
+            {/* Avatar */}
             <Box
-              key={index}
+              component="img"
+              src={msg.type === "user" ? userImage : boatImage}
               sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 1,
-                mb: 2,
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+              }}
+            />
+
+            {/* Message */}
+            <Box
+              sx={{
+                backgroundColor:
+                  msg.type === "user" ? "#E3F2FD" : "#F1F1F1",
+                p: 1.5,
+                borderRadius: "10px",
+                maxWidth: "70%",
               }}
             >
-              {/* Avatar */}
-              <Box
-                component="img"
-                src={msg.type === "user" ? userImage : boatImage}
-                alt="avatar"
-                sx={{
-                  width: "35px",
-                  height: "35px",
-                  borderRadius: "50%",
-                }}
-              />
-
-              {/* Message Bubble */}
+              {/* Name + Time */}
               <Box
                 sx={{
-                  backgroundColor: msg.type === "user" ? "#E3F2FD" : "#F1F1F1",
-                  p: 1.5,
-                  borderRadius: "10px",
-                  maxWidth: "70%",
+                  display: "flex",
+                  justifyContent: "space-between",
                 }}
               >
-                {/* Name */}
-                <Typography
-                  variant="caption"
-                  sx={{ fontWeight: "bold", display: "block", mb: 0.5 }}
-                >
+                <Typography variant="caption" fontWeight="bold">
                   {msg.type === "user" ? "You" : "Soul AI"}
                 </Typography>
 
-                {/* Message */}
-                <Typography variant="body2">{msg.text}</Typography>
-
-                {/* ✅ Feedback + Rating (only for bot) */}
-                {msg.type === "bot" && (
-                  <Box sx={{ mt: 1, display: "flex", gap: 2 }}>
-                    {/* Feedback */}
-                    {chat.feedbacks?.[index] && (
-                      <Typography variant="caption">
-                        Feedback: {chat.feedbacks[index]}
-                      </Typography>
-                    )}
-
-                    {/* Rating */}
-                    {chat.ratings?.[index] && (
-                      <Typography variant="caption">
-                        Rating: {"⭐".repeat(chat.ratings[index])}
-                      </Typography>
-                    )}
-                  </Box>
-                )}
+                <Typography variant="caption" color="text.secondary">
+                  {msg.time}
+                </Typography>
               </Box>
+
+              <Typography variant="body2">{msg.text}</Typography>
+
+              {/* Feedback + Rating */}
+              {msg.type === "bot" && (
+                <Box sx={{ mt: 1, display: "flex", gap: 2 }}>
+                  {chat.feedbacks?.[index] && (
+                    <Typography variant="caption">
+                      Feedback: {chat.feedbacks[index]}
+                    </Typography>
+                  )}
+
+                  {chat.ratings?.[index] && (
+                    <Typography variant="caption">
+                      Rating: {"⭐".repeat(chat.ratings[index])}
+                    </Typography>
+                  )}
+                </Box>
+              )}
             </Box>
-          ))}
-        </Card>
-      ))}
+          </Box>
+        ))}
+      </Card>
+    ))}
+  </Box>
+))}
     </Box>
   );
 }

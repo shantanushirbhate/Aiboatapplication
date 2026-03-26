@@ -1,4 +1,4 @@
-import React,{useRef,useState} from "react";
+import React, { useRef, useState } from "react";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import Aiimage from "./assets/bot.png";
 
@@ -11,21 +11,26 @@ import ConversationHistory from "./component/conversation";
 export default function App() {
   const isMobile = useMediaQuery("(max-width:1200px)");
   const [messages, setMessages] = useState([]);
-const inputRef = useRef();
+  const inputRef = useRef();
 
   return (
     <BrowserRouter>
       <Box
         sx={{
+           pr: { xs: "100px", sm: "4px", md: "5px" },
           display: "flex",
           height: "97.5vh", // ✅ full screen
           backgroundColor: "#D7C7F4",
+          overflow: "hidden",
+          
         }}
       >
         {/* Sidebar */}
-        <SideBar  messages={messages}
-  setMessages={setMessages}
-  inputRef={inputRef} />
+        <SideBar
+          messages={messages}
+          setMessages={setMessages}
+          inputRef={inputRef}
+        />
 
         {/* Main Content */}
         <Box
@@ -63,7 +68,7 @@ const inputRef = useRef();
                       textAlign: "center",
                     }}
                   >
-                    <Box sx={{ mb: 2 }}>
+                    <Box>
                       <Box
                         component="img"
                         src={Aiimage}
@@ -74,7 +79,7 @@ const inputRef = useRef();
                         }}
                       />
 
-                      <Typography variant="h5" sx={{ mt: 2 }}>
+                      <Typography variant="h5" sx={{ mt:0 }}>
                         How Can I Help You Today?
                       </Typography>
                     </Box>
@@ -94,7 +99,7 @@ const inputRef = useRef();
                 </>
               }
             />
-               <Route
+            <Route
               path="/history"
               element={
                 <Box sx={{ flex: 1, overflow: "auto" }}>

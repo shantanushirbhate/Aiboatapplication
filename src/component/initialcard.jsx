@@ -34,8 +34,6 @@ import MuiAlert from "@mui/material/Alert";
 export default function InitialCard() {
   const inputRef = useRef(null);
 
-
-
   const location = useLocation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -57,8 +55,6 @@ export default function InitialCard() {
   // storing in localstorage //
   const [feedbacks, setFeedbacks] = useState({});
 
-
-
   const handleReaction = (index, type) => {
     setReactions((prev) => ({
       ...prev,
@@ -72,8 +68,9 @@ export default function InitialCard() {
   };
 
   const handleSaveChat = () => {
+    if (messages.length === 0) return;
     const chatData = {
-      id: Date.now(), // unique id
+      id: Date.now() + Math.random(),
       messages,
       ratings,
       feedbacks,
@@ -89,6 +86,8 @@ export default function InitialCard() {
     // save back
     localStorage.setItem("chatHistory", JSON.stringify(updatedChats));
 
+    window.dispatchEvent(new Event("chatUpdated"));
+
     setOpenSnackbar(true);
   };
 
@@ -98,6 +97,7 @@ export default function InitialCard() {
       [index]: value,
     }));
   };
+
   useEffect(() => {
     // small timeout ensures DOM is ready
     setTimeout(() => {
@@ -106,7 +106,9 @@ export default function InitialCard() {
   }, [location]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   }, [messages]);
 
   const handleCardClick = (question) => {
@@ -114,7 +116,9 @@ export default function InitialCard() {
       (item) => item.question.toLowerCase() === question.toLowerCase(),
     );
 
-    const botReply = found ? found.response : "Sorry, I don't understand.";
+    const botReply = found
+      ? found.response
+      : "Sorry, Did not understand your query!";
 
     const getTime = () => {
       return new Date().toLocaleTimeString([], {
@@ -128,12 +132,14 @@ export default function InitialCard() {
       { type: "bot", text: botReply, time: getTime() },
     ]);
   };
+
   useEffect(() => {
     if (location.state?.selectedChat) {
       setMessages(location.state.selectedChat.messages);
     }
+    window.history.replaceState({}, document.title);
   }, [location.state]);
-  
+
   const handleSend = () => {
     if (!input.trim()) return;
     handleCardClick(input);
@@ -143,15 +149,17 @@ export default function InitialCard() {
   return (
     <>
       <Box
+        Box
         sx={{
-          p: 3,
+          p: { xs: 1, sm: 2, md: 3 },
           width: "100%",
           maxWidth: "900px",
-          margin: "auto",
+          mx: "auto", // ✅ perfect center (NO LEFT SPACE ISSUE)
           display: "flex",
           flexDirection: "column",
-          gap: 3,
+          gap: 2,
           height: "100vh",
+          overflow: "hidden",
         }}
       >
         <Box
@@ -168,6 +176,7 @@ export default function InitialCard() {
             <Box
               key={index}
               sx={{
+                width: { xs: "300px", sm: "0", md: "100%" },
                 display: "flex",
                 flexDirection: msg.type === "user" ? "row-reverse" : "row",
                 alignItems: "flex-start",
@@ -180,8 +189,8 @@ export default function InitialCard() {
                 component="img"
                 src={msg.type === "user" ? userImage : boatImage}
                 sx={{
-                  height: "40px",
-                  width: "40px",
+                  height: { xs: "28px", sm: "34px", md: "40px" },
+                  width: { xs: "28px", sm: "34px", md: "40px" },
                   borderRadius: "50%",
                 }}
               />
@@ -204,7 +213,11 @@ export default function InitialCard() {
                   p: 1.5,
                   pb: msg.type === "bot" ? 6 : 1.5,
                   borderRadius: "12px",
-                  maxWidth: "70%",
+                  maxWidth: {
+                    xs: "85%", // mobile
+                    sm: "75%", // tablet
+                    md: "65%", // desktop
+                  },
                   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   position: "relative",
 
@@ -222,7 +235,13 @@ export default function InitialCard() {
                   }}
                 >
                   <Typography variant="subtitle2" fontWeight="bold">
-                    {msg.type === "user" ? "You" : "Soul AI"}
+                    {msg.type === "user" ? (
+                      "You"
+                    ) : (
+                      <Box component="span" sx={{ color: "#1976d2" }}>
+                        Soul AI
+                      </Box>
+                    )}
                   </Typography>
 
                   <Typography variant="caption" color="text.secondary">
@@ -231,8 +250,21 @@ export default function InitialCard() {
                 </Box>
 
                 {/* Message Text */}
-                <Typography variant="body2">{msg.text}</Typography>
-                {msg.type === "bot" &&
+{msg.type === "bot" ? (
+  <Box
+    component="p"
+    sx={{
+      margin: 0,
+      fontSize: "14px",
+      lineHeight: 1.5,
+      color: "#333",
+    }}
+  >
+    {msg.text}
+  </Box>
+) : (
+  <Typography variant="body2">{msg.text}</Typography>
+)}                {msg.type === "bot" &&
                   reactions[index] === "like" &&
                   ((isMobile && activeIndex === index) ||
                     (!isMobile && hoveredIndex === index)) && (
@@ -321,59 +353,75 @@ export default function InitialCard() {
         {messages.length === 0 && (
           <>
             {/* Row 1 */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <Card
-                sx={cardStyle}
-                onClick={() => handleCardClick("Hi, what is the weather")}
-              >
-                <CardContent>
-                  <Typography variant="h6">Hi, what is the weather</Typography>
-                  <Typography variant="body2">
-                    Get immediate AI generated response
-                  </Typography>
-                </CardContent>
-              </Card>
+            <Box
+              sx={{
+                width: { xs: "300px", sm: "100%", md: "100%" },
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr", // mobile
+                  sm: "1fr 1fr", // tablet+
+                },
+                gap: 2,
+              }}
+            >
+              {" "}
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                <Card
+                  sx={cardStyle}
+                  onClick={() => handleCardClick("Hi, what is the weather")}
+                >
+                  <CardContent>
+                    <Typography variant="h6">
+                      Hi, what is the weather
+                    </Typography>
+                    <Typography variant="body2">
+                      Get immediate AI generated response
+                    </Typography>
+                  </CardContent>
+                </Card>
 
-              <Card
-                sx={cardStyle}
-                onClick={() => handleCardClick("Hi, what is my location")}
-              >
-                <CardContent>
-                  <Typography variant="h6">Hi, what is my location</Typography>
-                  <Typography variant="body2">
-                    Get immediate AI generated response
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Box>
+                <Card
+                  sx={cardStyle}
+                  onClick={() => handleCardClick("Hi, what is my location")}
+                >
+                  <CardContent>
+                    <Typography variant="h6">
+                      Hi, what is my location
+                    </Typography>
+                    <Typography variant="body2">
+                      Get immediate AI generated response
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+              {/* Row 2 */}
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                <Card
+                  sx={cardStyle}
+                  onClick={() => handleCardClick("Hi, what is the temperature")}
+                >
+                  <CardContent>
+                    <Typography variant="h6">
+                      Hi, what is the temperature
+                    </Typography>
+                    <Typography variant="body2">
+                      Get immediate AI generated response
+                    </Typography>
+                  </CardContent>
+                </Card>
 
-            {/* Row 2 */}
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-              <Card
-                sx={cardStyle}
-                onClick={() => handleCardClick("Hi, what is the temperature")}
-              >
-                <CardContent>
-                  <Typography variant="h6">
-                    Hi, what is the temperature
-                  </Typography>
-                  <Typography variant="body2">
-                    Get immediate AI generated response
-                  </Typography>
-                </CardContent>
-              </Card>
-
-              <Card
-                sx={cardStyle}
-                onClick={() => handleCardClick("Hi, how are you")}
-              >
-                <CardContent>
-                  <Typography variant="h6">Hi, how are you</Typography>
-                  <Typography variant="body2">
-                    Get immediate AI generated response
-                  </Typography>
-                </CardContent>
-              </Card>
+                <Card
+                  sx={cardStyle}
+                  onClick={() => handleCardClick("Hi, how are you")}
+                >
+                  <CardContent>
+                    <Typography variant="h6">Hi, how are you</Typography>
+                    <Typography variant="body2">
+                      Get immediate AI generated response
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
             </Box>
           </>
         )}
@@ -381,12 +429,15 @@ export default function InitialCard() {
         {/* ✅ INPUT SECTION (ALWAYS VISIBLE) */}
         <Box
           sx={{
+          
+            width:{xs:"300px", sm:"100%" , md:"100%"},
             display: "flex",
-            gap: 2,
+            gap: 1,
             flexDirection: {
               xs: "column",
               sm: "row",
             },
+            flexShrink: 0,
           }}
         >
           <TextField
@@ -401,11 +452,11 @@ export default function InitialCard() {
             }}
           />
 
-          <Button variant="contained" onClick={handleSend}>
+          <Button type="submit" variant="contained" onClick={handleSend}>
             Ask
           </Button>
 
-          <Button variant="outlined" onClick={handleSaveChat}>
+          <Button variant="outlined" type="button" onClick={handleSaveChat}>
             Save
           </Button>
         </Box>
@@ -482,6 +533,7 @@ export default function InitialCard() {
 // ✅ Card Style
 const cardStyle = {
   flex: "1 1 300px",
+  width: "100%",
   backgroundColor: "#fff",
   borderRadius: "16px",
   boxShadow: "0 6px 20px rgba(0,0,0,0.1)",

@@ -23,44 +23,43 @@ export default function SideBar({ messages, setMessages, inputRef }) {
 
 
 const handleNewChat = () => {
-  if (messages && messages.length > 0) {
-    const oldChats =
-      JSON.parse(localStorage.getItem("chatHistory")) || [];
-
-    const newChat = {
-      id: Date.now(),
-      messages: messages,
-    };
-
-    const updatedChats = [...oldChats, newChat];
-
-    localStorage.setItem("chatHistory", JSON.stringify(updatedChats));
-
-    setChatList(updatedChats);
-  }
-
-  // ✅ clear chat
   setMessages([]);
-
-  // ✅ navigate to home (IMPORTANT)
   navigate("/");
 
-  // ✅ focus input
   setTimeout(() => {
     inputRef?.current?.focus();
   }, 0);
 
-  // ✅ close sidebar
   setOpen(false);
 };
 
   const [chatList, setChatList] = useState([]);
 
-  useEffect(() => {
-    const storedChats = JSON.parse(localStorage.getItem("chatHistory")) || [];
+ useEffect(() => {
+  const loadChats = () => {
+    const storedChats =
+      JSON.parse(localStorage.getItem("chatHistory")) || [];
     setChatList(storedChats);
-  }, []);
+  };
 
+  loadChats(); // initial load
+
+  window.addEventListener("chatUpdated", loadChats);
+
+  return () => {
+    window.removeEventListener("chatUpdated", loadChats);
+  };
+ }, []);
+  
+const handleDeleteChat = (chatId) => {
+  const updatedChats = chatList.filter((chat) => chat.id !== chatId);
+
+  setChatList(updatedChats);
+  localStorage.setItem("chatHistory", JSON.stringify(updatedChats));
+
+  // notify other components
+  window.dispatchEvent(new Event("chatUpdated"));
+};
 
 
   const sidebarContent = (
@@ -118,37 +117,76 @@ const handleNewChat = () => {
       >
         Past Conversation
       </Button>
-      <Box sx={{ mt: 2, overflowY: "auto" }}>
+      <Box  sx={{
+    mt: 2,
+    overflowY: "auto",
+
+    // ✅ Hide scrollbar (Chrome, Safari)
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
+
+    // ✅ Hide scrollbar (Firefox)
+    scrollbarWidth: "none",
+
+    // ✅ Hide scrollbar (IE/Edge legacy)
+    msOverflowStyle: "none",
+  }}>
   {chatList.map((chat, index) => {
     // take first message as preview
-    const preview =
-      chat.messages?.[0]?.text?.slice(0, 20) || "New Chat";
+const firstUserMsg = Array.isArray(chat.messages)
+  ? chat.messages.find((m) => m.type === "user")
+  : null;
+
+const preview =
+  firstUserMsg?.text?.slice(0, 25) || "New Chat";
 
     return (
       <Box
-        key={chat.id}
-        onClick={() => {
-          navigate("/", { state: { selectedChat: chat } });
-          setOpen(false);
-        }}
-        sx={{
-          backgroundColor: "#D7C7F4",
-          px: 2,
-          py: 1,
-          mb: 1,
-          borderRadius: "20px", // ✅ capsule shape
-          cursor: "pointer",
-          fontSize: "12px",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          "&:hover": {
-            backgroundColor: "#c5b3ec",
-          },
-        }}
-      >
-        {preview}
-      </Box>
+    key={chat.id}
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: "#D7C7F4",
+      px: 2,
+      py: 1,
+      mb: 1,
+      borderRadius: "20px",
+      cursor: "pointer",
+      fontSize: "12px",
+      "&:hover": {
+        backgroundColor: "#c5b3ec",
+      },
+    }}
+  >
+    {/* Chat preview */}
+    <Box
+      onClick={() => {
+        navigate("/", { state: { selectedChat: chat } });
+        setOpen(false);
+      }}
+      sx={{
+        flex: 1,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {preview}
+    </Box>
+
+    {/* ❌ Delete Button */}
+    <IconButton
+      size="small"
+      onClick={(e) => {
+        e.stopPropagation(); // 🚨 prevent opening chat
+        handleDeleteChat(chat.id);
+      }}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
+  </Box>
     );
   })}
 </Box>
