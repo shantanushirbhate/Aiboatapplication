@@ -3,6 +3,7 @@ import boat from "../assets/bot.png";
 import edit from "../assets/edit.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import { Link } from "react-router-dom";
 
 import { useNavigate } from "react-router-dom";
 
@@ -86,7 +87,9 @@ const handleDeleteChat = (chatId) => {
         </IconButton>
       )}
 
-    <Button
+  <Button
+  component={Link}
+  to="/"
   onClick={handleNewChat}
   sx={{
     backgroundColor: "#D7C7F4",
@@ -104,19 +107,18 @@ const handleDeleteChat = (chatId) => {
 
   <Box component="img" src={edit} sx={{ width: 30, height: 30 }} />
 </Button>
-
-      <Button
-        onClick={() => {
-          navigate("/history");
-          setOpen(false); // close drawer in mobile
-        }}
-        sx={{
-          backgroundColor: "#D7C7F4",
-          textTransform: "none",
-        }}
-      >
-        Past Conversation
-      </Button>
+     <Button
+  component={Link}
+  to="/history"
+  onClick={() => setOpen(false)}
+  sx={{
+    backgroundColor: "#D7C7F4",
+    textTransform: "none",
+  }}
+>
+  Past Conversation
+</Button>
+     
       <Box  sx={{
     mt: 2,
     overflowY: "auto",

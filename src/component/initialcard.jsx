@@ -434,39 +434,43 @@ export default function InitialCard() {
         )}
 
         {/* ✅ INPUT SECTION (ALWAYS VISIBLE) */}
-        <Box
-          sx={{
-          
-            width:{xs:"300px", sm:"100%" , md:"100%"},
-            display: "flex",
-            gap: 1,
-            flexDirection: {
-              xs: "column",
-              sm: "row",
-            },
-            flexShrink: 0,
-          }}
-        >
-          <TextField
-            fullWidth
-            inputRef={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-             placeholder="Message Bot AI..." 
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: "12px",
-            }}
-          />
+      <Box
+  component="form"
+  onSubmit={(e) => {
+    e.preventDefault();
+    handleSend();
+  }}
+  sx={{
+    width:{xs:"300px", sm:"100%" , md:"100%"},
+    display: "flex",
+    gap: 1,
+    flexDirection: {
+      xs: "column",
+      sm: "row",
+    },
+    flexShrink: 0,
+  }}
+>
+  <TextField
+    fullWidth
+    inputRef={inputRef}
+    value={input}
+    onChange={(e) => setInput(e.target.value)}
+    placeholder="Message Bot AI..."
+    sx={{
+      backgroundColor: "#fff",
+      borderRadius: "12px",
+    }}
+  />
 
-          <Button type="submit" variant="contained" onClick={handleSend}>
-            Ask
-          </Button>
+  <Button type="submit" variant="contained">
+    Ask
+  </Button>
 
-          <Button variant="outlined" type="button" onClick={handleSaveChat}>
-            Save
-          </Button>
-        </Box>
+  <Button variant="outlined" type="button" onClick={handleSaveChat}>
+    Save
+  </Button>
+</Box>
       </Box>
       <Dialog
         open={openFeedback}

@@ -43,15 +43,11 @@ export default function App() {
           }}
         >
           {/* Header */}
-          <Typography
-            variant="h4"
-            sx={{
-              mb: 2,
-              textAlign: { xs: "center", sm: "left" },
-            }}
-          >
-            Boat AI
-          </Typography>
+          <Box component="header">
+  <Typography variant="h4" component="h1">
+    Bot AI
+  </Typography>
+</Box>
 
           {/* Center Intro (only when no chat yet) */}
           <Routes>
