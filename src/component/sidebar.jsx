@@ -113,7 +113,7 @@ const isMobile = false; // ✅ force sidebar visible for Cypress
           textTransform: "none",
         }}
       >
-        Past Conversation
+       Past Conversations
       </Button>
 
       <Box
