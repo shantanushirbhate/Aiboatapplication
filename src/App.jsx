@@ -50,7 +50,7 @@ export default function App() {
               textAlign: { xs: "center", sm: "left" },
             }}
           >
-            BoatAi
+            Boat AI
           </Typography>
 
           {/* Center Intro (only when no chat yet) */}

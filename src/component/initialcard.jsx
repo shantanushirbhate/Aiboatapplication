@@ -7,7 +7,7 @@ import {
   TextField,
   Box,
 } from "@mui/material";
-import AiData from "../aidata/sampledata.json";
+import AiData from "../aiData/sampledata.json";
 import userImage from "../assets/person.png";
 import boatImage from "../assets/bot.png";
 import ThumbUpAltOutlinedIcon from "@mui/icons-material/ThumbUpAltOutlined";
@@ -111,28 +111,35 @@ export default function InitialCard() {
     }, 50);
   }, [messages]);
 
-  const handleCardClick = (question) => {
-    const found = AiData.find(
-      (item) => item.question.toLowerCase() === question.toLowerCase(),
+ const handleCardClick = (question) => {
+  const normalizedInput = question.toLowerCase().trim();
+
+  const found = AiData.find((item) => {
+    const normalizedQuestion = item.question.toLowerCase().trim();
+
+    return (
+      normalizedInput.includes(normalizedQuestion) ||
+      normalizedQuestion.includes(normalizedInput)
     );
+  });
 
-    const botReply = found
-      ? found.response
-      : "Sorry, Did not understand your query!";
+  const botReply = found
+    ? found.response
+    : "Sorry, Did not understand your query!";
 
-    const getTime = () => {
-      return new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    };
-    setMessages((prev) => [
-      ...prev,
-      { type: "user", text: question, time: getTime() },
-      { type: "bot", text: botReply, time: getTime() },
-    ]);
+  const getTime = () => {
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
+  setMessages((prev) => [
+    ...prev,
+    { type: "user", text: question, time: getTime() },
+    { type: "bot", text: botReply, time: getTime() },
+  ]);
+};
   useEffect(() => {
     if (location.state?.selectedChat) {
       setMessages(location.state.selectedChat.messages);
@@ -368,7 +375,7 @@ export default function InitialCard() {
               <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                 <Card
                   sx={cardStyle}
-                  onClick={() => handleCardClick("Hi, what is the weather")}
+                  onClick={() => handleCardClick("Hi, what is the weather?")}
                 >
                   <CardContent>
                     <Typography variant="h6">
@@ -445,7 +452,7 @@ export default function InitialCard() {
             inputRef={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Message Bot AI…"
+             placeholder="Message Bot AI..." 
             sx={{
               backgroundColor: "#fff",
               borderRadius: "12px",
