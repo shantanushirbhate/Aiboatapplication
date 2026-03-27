@@ -14,7 +14,12 @@ export default function App() {
   const inputRef = useRef();
 
   return (
-    <BrowserRouter>
+    <>
+       {/* <Box sx={{ display: "none" }}>
+      <Link to="/history">History</Link>
+      <Link to="/">Home</Link>
+    </Box> */}
+          <BrowserRouter>
       <Box
         sx={{
            pr: { xs: "100px", sm: "4px", md: "5px" },
@@ -107,5 +112,7 @@ export default function App() {
         </Box>
       </Box>
     </BrowserRouter>
+    </>
+
   );
 }
